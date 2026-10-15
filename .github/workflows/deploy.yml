@@ -2,18 +2,15 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ] # Ganti ke 'master' jika branch utama Anda master
+    branches: [ main ]
 
-  # Memungkinkan Anda menjalankan workflow ini secara manual dari tab Actions
   workflow_dispatch:
 
-# Mengatur permissions agar GITHUB_TOKEN bisa menulis ke Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Hanya izinkan satu deployment berjalan secara bersamaan
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -28,11 +25,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Sesuaikan dengan versi Node yang Anda gunakan
-          cache: 'npm'
+          node-version: '22'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build project
         run: npm run build
@@ -40,7 +36,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist # Folder hasil build Vite
+          path: ./dist
 
   deploy:
     environment:
