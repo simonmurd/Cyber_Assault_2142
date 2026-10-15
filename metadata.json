@@ -1,0 +1,6 @@
+{
+  "name": "Cyber Assault 2142",
+  "description": "Game aksi cyberpunk 2D & Game Studio interaktif: kendalikan Agen Nexus menyusup ke Cyber City, taklukkan patroli Robo-Trooper, berayun dengan grapple hook, kelola Heat Gauge tembakan fokus, dan hancurkan Sentinel Vanguard Mech!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

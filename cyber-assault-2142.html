@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Assault 2142 - Game Studio & 16-Bit Action (Single File)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts for Retro Cyberpunk Aesthetic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <!-- Monaco Editor (VS Code Engine) CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs/editor/editor.main.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs/loader.min.js"></script>
+
+  <style>
+    body {
+      background-color: #050811;
+      color: #e2e8f0;
+      font-family: 'Chakra Petch', system-ui, sans-serif;
+    }
+    .font-pixel { font-family: 'Press Start 2P', monospace; }
+    .font-code { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+  </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+  <!-- Header Bar -->
+  <header class="h-14 bg-slate-950 border-b border-cyan-950/80 px-4 md:px-6 flex items-center justify-between z-10 select-none">
+    <div class="flex items-center space-x-3">
+      <span class="flex h-3 w-3 relative">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+      </span>
+      <div class="flex items-center gap-2">
+        <h1 class="text-base font-bold text-slate-100 tracking-wider flex items-center gap-1.5">
+          <span class="text-white">CYBER ASSAULT</span>
+          <span class="text-cyan-400 font-pixel text-xs">2142</span>
+        </h1>
+        <span class="text-[10px] bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 px-2 py-0.5 rounded font-code tracking-widest hidden sm:inline-block">
+          STANDALONE SINGLE-FILE HTML
+        </span>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-2 md:space-x-3">
+      <!-- Stage Jump Buttons -->
+      <div class="flex bg-slate-900 border border-slate-800 rounded p-0.5 text-xs">
+        <button id="stage1-btn" onclick="selectStage(1)" class="px-2.5 py-1 rounded text-cyan-400 bg-cyan-950/60 font-code font-bold hover:text-white transition">Stg 1</button>
+        <button id="stage2-btn" onclick="selectStage(2)" class="px-2.5 py-1 rounded text-slate-400 hover:text-cyan-300 font-code transition">Stg 2</button>
+        <button id="stage3-btn" onclick="selectStage(3)" class="px-2.5 py-1 rounded text-slate-400 hover:text-cyan-300 font-code transition">Stg 3 (Boss)</button>
+      </div>
+
+      <!-- Preset Selector -->
+      <select id="preset-selector" onchange="loadPreset(this.value)" class="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded px-2.5 py-1.5 font-code focus:outline-none focus:border-cyan-500">
+        <option value="standard">Preset: Standar 2142</option>
+        <option value="turbo">Preset: Nexus Turbo Agent</option>
+        <option value="heavy">Preset: Heavy Core Buster</option>
+        <option value="riot">Preset: Hardcore Riot</option>
+      </select>
+
+      <!-- Manual & Guide Modal Button -->
+      <button onclick="toggleManualModal()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-cyan-300 border border-slate-800 px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span class="hidden md:inline">Manual & Galeri</span>
+      </button>
+
+      <!-- Download HTML File Button -->
+      <button onclick="downloadSelfHtml()" title="Simpan berkas HTML ini ke komputer Anda" class="bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-emerald-400 border border-slate-800 px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span class="hidden lg:inline">Unduh HTML</span>
+      </button>
+
+      <!-- Run & Play Button -->
+      <button id="run-btn" class="bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-slate-950 font-bold px-4 py-1.5 rounded transition-all flex items-center space-x-1.5 shadow-lg shadow-cyan-500/25 text-xs font-code">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 fill-current" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+        </svg>
+        <span>Jalankan & Mainkan!</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace Area (Dual-View: Code Editor on Left, Live Game Canvas on Right) -->
+  <main class="flex flex-1 w-full overflow-hidden">
+    
+    <!-- Code Editor Area -->
+    <section class="w-full md:w-1/2 border-r border-slate-800 flex flex-col bg-slate-950">
+      <div class="bg-slate-900/90 px-4 py-2 text-xs font-code text-slate-400 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-cyan-400 font-bold">cyber_assault_2142.js</span>
+          <span class="text-slate-600">|</span>
+          <span class="text-slate-400 hidden sm:inline">Ubah parameter Nexus, senjata, dan bos</span>
+        </div>
+        <div class="text-[11px] text-emerald-400 flex items-center gap-1 font-mono">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live Modder
+        </div>
+      </div>
+      
+      <!-- Monaco Editor Mount Container -->
+      <div id="editor-container" class="w-full flex-1"></div>
+
+      <!-- Quick Control Helper Bar -->
+      <div class="bg-slate-900/90 border-t border-slate-800 px-4 py-1.5 text-[11px] font-code text-slate-400 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-cyan-400">KONTROL:</span>
+          <span>A/D Gerak</span>
+          <span class="text-slate-600">·</span>
+          <span>W/Space Lompat</span>
+          <span class="text-slate-600">·</span>
+          <span>B Slide</span>
+          <span class="text-slate-600">·</span>
+          <span>X Tembak</span>
+          <span class="text-slate-600">·</span>
+          <span>R Grapple</span>
+        </div>
+        <button onclick="runCode()" class="text-cyan-400 hover:text-cyan-300 font-bold hover:underline">
+          Terapkan Modifikasi &crarr;
+        </button>
+      </div>
+    </section>
+
+    <!-- Game Canvas Output Area -->
+    <section class="w-full md:w-1/2 flex flex-col bg-slate-950 relative">
+      <div class="bg-slate-900/90 px-4 py-2 text-xs font-code text-slate-400 border-b border-slate-800 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>Pratinjau Live 16-Bit Cyberpunk Engine</span>
+        </div>
+        <span class="text-[11px] text-slate-500 font-mono">60 FPS · Web Audio Synth</span>
+      </div>
+      
+      <div class="flex-1 flex items-center justify-center p-2 sm:p-4 bg-slate-950 overflow-hidden relative">
+        <iframe id="preview-iframe" class="w-full h-full max-w-[840px] max-h-[620px] border border-cyan-900/60 rounded-lg shadow-2xl shadow-cyan-950/50 bg-black"></iframe>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Manual & Galeri Referensi (Bagian 1-3) -->
+  <div id="manual-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-950 border border-cyan-800/80 rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
+      <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-cyan-400 font-pixel text-xs">CYBER 2142</span>
+          <h2 class="text-base font-bold text-white tracking-wide">Manual Referensi Taktis & Karakter</h2>
+        </div>
+        <button onclick="toggleManualModal()" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Nav Tabs -->
+      <div class="flex bg-slate-900/70 border-b border-slate-800 px-4 gap-2 text-xs font-code overflow-x-auto">
+        <button onclick="showManualTab('tab-chars')" id="btn-tab-chars" class="px-3 py-2 text-cyan-400 border-b-2 border-cyan-400 font-bold">1. Galeri Karakter & Musuh</button>
+        <button onclick="showManualTab('tab-mechanics')" id="btn-tab-mechanics" class="px-3 py-2 text-slate-400 hover:text-cyan-300">2. Mekanika Tempur & Gerak</button>
+        <button onclick="showManualTab('tab-boss')" id="btn-tab-boss" class="px-3 py-2 text-slate-400 hover:text-cyan-300">3. Strategi Bos Vanguard Mech</button>
+        <button onclick="showManualTab('tab-expansion')" id="btn-tab-expansion" class="px-3 py-2 text-slate-400 hover:text-cyan-300">4. Konsep 3 Stage Baru & Parallax</button>
+      </div>
+
+      <!-- Modal Content Body -->
+      <div class="p-6 overflow-y-auto space-y-6 text-sm text-slate-300 flex-1">
+        
+        <!-- Tab 1: Galeri Karakter -->
+        <div id="tab-chars" class="space-y-4">
+          <h3 class="text-base font-bold text-cyan-300 flex items-center gap-2">
+            <span>BAGIAN 1: LEMBAR REFERENSI KARAKTER & MUSUH</span>
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-lg">
+              <span class="text-xs font-code text-cyan-400 font-bold block mb-1">PEMAIN UTAMA</span>
+              <h4 class="text-white font-bold text-base">Cyborg Agent 01: "Nexus"</h4>
+              <p class="text-xs text-slate-400 mt-1">Wanita cybergirl berambut biru dalam armor oranye & hitam. Dilengkapi kacamata HUD taktis dan Senapan Laser Standar multi-arah serta mikro-jet pada sepatu bot untuk slide dash.</p>
+              <div class="mt-3 flex gap-2 text-[11px] font-code">
+                <span class="bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">Laser Multi-Arah</span>
+                <span class="bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-800">Slide Dash</span>
+                <span class="bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">Grapple Hook</span>
+              </div>
+            </div>
+
+            <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-lg">
+              <span class="text-xs font-code text-rose-400 font-bold block mb-1">MUSUH DASAR (GROUND)</span>
+              <h4 class="text-white font-bold text-base">Robo-Trooper MK.I (Standard)</h4>
+              <p class="text-xs text-slate-400 mt-1">Prajurit bipedal patroli kota dengan sasis baja kokoh dan senapan laser otomatis. Berpatroli di girder dan menembaki penyusup.</p>
+            </div>
+
+            <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-lg">
+              <span class="text-xs font-code text-yellow-400 font-bold block mb-1">MUSUH UDARA (AIR)</span>
+              <h4 class="text-white font-bold text-base">Explosive Drone MK.I</h4>
+              <p class="text-xs text-slate-400 mt-1">Quadcopter terbang gesit yang melakukan manuver swooping dan serangan bunuh diri peledak saat mendeteksi Agen Nexus.</p>
+            </div>
+
+            <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-lg">
+              <span class="text-xs font-code text-purple-400 font-bold block mb-1">BOS UTAMA (HEAVY MECH)</span>
+              <h4 class="text-white font-bold text-base">Sentinel Vanguard Mech</h4>
+              <p class="text-xs text-slate-400 mt-1">Mesin tempur raksasa bipedal dengan meriam laras ganda dan peluncur salvo rudal. Memiliki titik lemah panel dada yang terbuka (Exposed Core).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Mekanika Gerak & Tempur -->
+        <div id="tab-mechanics" class="space-y-4 hidden">
+          <h3 class="text-base font-bold text-cyan-300">BAGIAN 2: LEMBAR MEKANIKA GERAKAN & PERTARUNGAN</h3>
+          <div class="space-y-3">
+            <div class="p-3 bg-slate-900 rounded border border-slate-800">
+              <h4 class="font-bold text-white text-xs font-code text-cyan-300">1. Gerakan Dasar & Menghindar: Dash & Slide</h4>
+              <p class="text-xs text-slate-400 mt-1">Gunakan tombol <b>B</b> atau <b>Shift</b> untuk meluncur rendah (Slide Dash). Nexus mengaktifkan pendorong jet di sepatu bot untuk menghindari tembakan horizontal dan melewati rintangan rendah.</p>
+            </div>
+            <div class="p-3 bg-slate-900 rounded border border-slate-800">
+              <h4 class="font-bold text-white text-xs font-code text-amber-300">2. Penembakan Multi-Arah & Tembakan Fokus (Heat Gauge)</h4>
+              <p class="text-xs text-slate-400 mt-1">Tekan <b>X</b> untuk tembakan cepat standar. <b>Tahan tombol X</b> untuk mengisi daya dan melepaskan balok laser fokus berkekuatan tinggi (32 DMG). Perhatikan Heat Gauge; jika terisi 100%, senjata akan mengalami <i>Overheat</i> hingga mendingin.</p>
+            </div>
+            <div class="p-3 bg-slate-900 rounded border border-slate-800">
+              <h4 class="font-bold text-white text-xs font-code text-blue-300">3. Grapple Hook & Platform Rapuh</h4>
+              <p class="text-xs text-slate-400 mt-1">Tekan <b>R</b> atau <b>Klik Kanan</b> untuk menembakkan tali pengait ke rel langit-langit berhawa neon dan berayun melewati jurang atau platform yang hancur saat diinjak.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Strategi Bos -->
+        <div id="tab-boss" class="space-y-4 hidden">
+          <h3 class="text-base font-bold text-cyan-300">BAGIAN 3: PANDUAN TAKTIK BOS SENTINEL VANGUARD MECH</h3>
+          <div class="p-4 bg-slate-900 border border-cyan-900/50 rounded-lg space-y-3">
+            <div class="flex items-center gap-2 text-rose-400 font-bold font-code text-xs">
+              <span>&#9888; TITIK LEMAH TEREXPOSE (HANCURKAN PANEL DADA)</span>
+            </div>
+            <p class="text-xs leading-relaxed text-slate-300">
+              Vanguard Mech terlindung dari tembakan biasa di sebagian besar tubuhnya. Saat ia bersiap meluncurkan salvo rudal, panel pelindung dada di tengah akan terbuka dan memperlihatkan inti AI bercahaya oranye keemasan.
+            </p>
+            <ul class="text-xs space-y-1.5 list-disc list-inside text-slate-400">
+              <li><b>Fase 1:</b> Hindari rentetan meriam ganda dengan melompat ke platform atas atau menggunakan Grapple Hook.</li>
+              <li><b>Fase 2:</b> Saat panel dada terbuka dan bertuliskan <span class="text-amber-400 font-mono">! WEAK POINT !</span>, segera lepaskan <b>Tembakan Fokus (Tahan X)</b> untuk memberikan 3x Critical Damage.</li>
+              <li><b>Fase 3:</b> Waspadai jatuhnya puing dan serangan Sniper Drone di udara.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Tab 4: Ekspansi 3 Stage -->
+        <div id="tab-expansion" class="space-y-4 hidden">
+          <h3 class="text-base font-bold text-cyan-300">BAGIAN 4: RANCANGAN 3 STAGE BARU & PARALLAX CODE</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="p-3 bg-slate-900 rounded border border-slate-800">
+              <h4 class="font-bold text-cyan-400 text-xs font-code">Stage 2-A: Canal District</h4>
+              <p class="text-xs text-slate-400 mt-1">Viaduk bertingkat di atas kanal berair dengan jembatan pipa berkarat dan reklame neon basah.</p>
+            </div>
+            <div class="p-3 bg-slate-900 rounded border border-slate-800">
+              <h4 class="font-bold text-emerald-400 text-xs font-code">Stage 2-B: Outpost 7 Acid Canal</h4>
+              <p class="text-xs text-slate-400 mt-1">Pabrik kimia militer dengan air asam korosif hijau berpendar dan katup uap beracun periodik.</p>
+            </div>
+            <div class="p-3 bg-slate-900 rounded border border-slate-800">
+              <h4 class="font-bold text-purple-400 text-xs font-code">Stage 3-Final: Bio-Core Quarantine</h4>
+              <p class="text-xs text-slate-400 mt-1">Stasiun reaktor inti AI yang telah bermutasi bio-cybernetic dengan alarm merah berkedip.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 bg-slate-900 border-t border-slate-800 flex justify-end">
+        <button onclick="toggleManualModal()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-1.5 rounded text-xs font-code transition">
+          Tutup & Kembali ke Game
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let editor;
+
+    // Presets for the code editor
+    const PRESETS = {
+      standard: `// ==========================================
+// KONFIGURASI SKENARIO STANDAR: CYBER ASSAULT 2142
+// ==========================================
+const NEXUS_CONFIG = {
+  // Karakter Agen Nexus
+  speed: 240,            // Kecepatan lari horizontal (px/s)
+  jumpForce: 490,        // Kekuatan lompat vertikal
+  dashPower: 450,        // Kecepatan meluncur (Slide Dash)
+  
+  // Sistem Senjata & Balok Laser
+  laserDamage: 12,       // Kerusakan tembakan laser standar
+  focusDamage: 34,       // Kerusakan tembakan balok fokus (Tahan X)
+  heatMax: 100,          // Batas Heat Gauge sebelum Overheat
+  heatCoolRate: 28,      // Kecepatan pendinginan suhu laras (per detik)
+  
+  // Perlengkapan Cybernetic
+  grappleReach: 340,     // Panjang jangkauan tali Grapple Hook (px)
+  
+  // Tingkat Tantangan & Musuh
+  initialLives: 3,       // Jumlah nyawa Agen Nexus
+  bossHp: 1200,          // Daya tahan Sentinel Vanguard Mech
+  difficulty: "standard" // Mode: "standard" | "turbo" | "hardcore"
+};`,
+
+      turbo: `// ==========================================
+// PRESET: NEXUS TURBO AGENT (Kecepatan Tinggi)
+// ==========================================
+const NEXUS_CONFIG = {
+  speed: 360,            // Kecepatan lari super lincah
+  jumpForce: 560,        // Lompatan tinggi mikro-jet
+  dashPower: 680,        // Slide dash jarak jauh
+  laserDamage: 18,       // Kerusakan laser ditingkatkan
+  focusDamage: 55,       // Balok fokus bertenaga turbo
+  heatMax: 150,          // Kapasitor panas lebih besar
+  heatCoolRate: 45,      // Pendinginan ekstra cepat
+  grappleReach: 420,     // Kabel grapple ekstra panjang
+  initialLives: 5,
+  bossHp: 1500,
+  difficulty: "turbo"
+};`,
+
+      heavy: `// ==========================================
+// PRESET: HEAVY CORE BUSTER (Spesialis Penghancur Inti)
+// ==========================================
+const NEXUS_CONFIG = {
+  speed: 210,
+  jumpForce: 460,
+  dashPower: 400,
+  laserDamage: 22,       // Tembakan biasa berdaya hancur tinggi
+  focusDamage: 90,       // Balok fokus meremukkan armor bos seketika!
+  heatMax: 90,
+  heatCoolRate: 22,
+  grappleReach: 320,
+  initialLives: 4,
+  bossHp: 1800,
+  difficulty: "heavy_buster"
+};`,
+
+      riot: `// ==========================================
+// PRESET: HARDCORE ROBOT RIOT (Tantangan Ekstrem)
+// ==========================================
+const NEXUS_CONFIG = {
+  speed: 230,
+  jumpForce: 480,
+  dashPower: 420,
+  laserDamage: 10,
+  focusDamage: 26,
+  heatMax: 80,           // Cepat Overheat, butuh manajemen laras disiplin
+  heatCoolRate: 20,
+  grappleReach: 300,
+  initialLives: 2,       // Hanya 2 nyawa
+  bossHp: 1600,          // Vanguard Mech sangat tebal
+  difficulty: "hardcore"
+};`
+    };
+
+    let currentStage = 1;
+
+    function selectStage(stg) {
+      currentStage = stg;
+      [1, 2, 3].forEach(s => {
+        const btn = document.getElementById('stage' + s + '-btn');
+        if (s === stg) {
+          btn.className = "px-2.5 py-1 rounded text-cyan-400 bg-cyan-950/60 font-code font-bold hover:text-white transition";
+        } else {
+          btn.className = "px-2.5 py-1 rounded text-slate-400 hover:text-cyan-300 font-code transition";
+        }
+      });
+      runCode();
+    }
+
+    function loadPreset(presetKey) {
+      if (!editor || !PRESETS[presetKey]) return;
+      editor.setValue(PRESETS[presetKey]);
+      runCode();
+    }
+
+    function toggleManualModal() {
+      const modal = document.getElementById('manual-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    function showManualTab(tabId) {
+      const tabs = ['tab-chars', 'tab-mechanics', 'tab-boss', 'tab-expansion'];
+      tabs.forEach(t => {
+        const el = document.getElementById(t);
+        const btn = document.getElementById('btn-' + t);
+        if (t === tabId) {
+          el.classList.remove('hidden');
+          btn.className = "px-3 py-2 text-cyan-400 border-b-2 border-cyan-400 font-bold";
+        } else {
+          el.classList.add('hidden');
+          btn.className = "px-3 py-2 text-slate-400 hover:text-cyan-300";
+        }
+      });
+    }
+
+    // Inisialisasi Monaco Editor
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs' }});
+    require(['vs/editor/editor.main'], function() {
+      editor = monaco.editor.create(document.getElementById('editor-container'), {
+        value: PRESETS.standard,
+        language: 'javascript',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        fontSize: 13,
+        minimap: { enabled: false },
+        lineNumbers: 'on',
+        scrollBeyondLastLine: false
+      });
+
+      runCode();
+    });
+
+    function runCode() {
+      if (!editor) return;
+      const userCode = editor.getValue();
+      const iframe = document.getElementById('preview-iframe');
+
+      // The self-contained 16-bit Cyberpunk Canvas Game Engine
+      const iframeContent = `
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #02040a;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Press Start 2P', monospace, sans-serif;
+      user-select: none;
+    }
+    #canvas-wrap {
+      position: relative;
+      width: 800px;
+      height: 600px;
+      box-shadow: 0 0 40px rgba(6, 182, 212, 0.25);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -webkit-crisp-edges;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background: #000;
+      display: block;
+    }
+    /* CRT Scanline overlay effect */
+    .scanlines {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 5;
+    }
+    /* On-Screen Touch / Action Bar */
+    .touch-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: auto;
+      z-index: 10;
+    }
+    .touch-btn {
+      background: rgba(8, 14, 28, 0.85);
+      border: 1px solid rgba(6, 182, 212, 0.5);
+      color: #38bdf8;
+      font-size: 10px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: monospace;
+      text-transform: uppercase;
+      transition: all 0.1s;
+    }
+    .touch-btn:active {
+      background: #06b6d4;
+      color: #02040a;
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-wrap">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div class="scanlines"></div>
+    <div class="touch-bar">
+      <div style="display:flex; gap:6px;">
+        <button class="touch-btn" onmousedown="triggerKey('KeyX', true)" onmouseup="triggerKey('KeyX', false)">Tembak [X]</button>
+        <button class="touch-btn" onmousedown="triggerKey('KeyX_Focus', true)" onmouseup="triggerKey('KeyX_Focus', false)" style="border-color:#f59e0b; color:#fbbf24;">Fokus [Hold X]</button>
+        <button class="touch-btn" onclick="triggerKeyOnce('KeyR')" style="border-color:#3b82f6; color:#60a5fa;">Grapple [R]</button>
+        <button class="touch-btn" onclick="triggerKeyOnce('KeyB')" style="border-color:#ec4899; color:#f472b6;">Slide [B]</button>
+      </div>
+      <button class="touch-btn" onclick="toggleAudio()" id="btn-audio">Mute: OFF</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. EVALUASI USER CONFIG DARI MONACO EDITOR
+    ${userCode}
+
+    const CONFIG = (typeof NEXUS_CONFIG !== 'undefined') ? NEXUS_CONFIG : {
+      speed: 240, jumpForce: 490, dashPower: 450,
+      laserDamage: 12, focusDamage: 34, heatMax: 100, heatCoolRate: 28,
+      grappleReach: 340, bossHp: 1200, difficulty: 'standard'
+    };
+
+    const TARGET_STAGE = ${currentStage};
+
+    // 2. PROCEDURAL WEB AUDIO SYNTHESIZER
+    const AudioFX = {
+      ctx: null,
+      muted: false,
+      init() {
+        try {
+          if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+          if (this.ctx.state === 'suspended') this.ctx.resume();
+        } catch(e) {}
+      },
+      laser() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(820, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(140, this.ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.12);
+        } catch(e) {}
+      },
+      focusBeam() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(1200, this.ctx.currentTime + 0.22);
+          gain.gain.setValueAtTime(0.16, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.24);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.24);
+        } catch(e) {}
+      },
+      jump() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(520, this.ctx.currentTime + 0.14);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.14);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.14);
+        } catch(e) {}
+      },
+      slide() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.18);
+          gain.gain.setValueAtTime(0.14, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.18);
+        } catch(e) {}
+      },
+      grapple() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(900, this.ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(300, this.ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+        } catch(e) {}
+      },
+      explode() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(25, this.ctx.currentTime + 0.28);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.28);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.28);
+        } catch(e) {}
+      },
+      overheat() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+          osc.frequency.setValueAtTime(180, this.ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.25);
+        } catch(e) {}
+      }
+    };
+
+    function toggleAudio() {
+      AudioFX.muted = !AudioFX.muted;
+      document.getElementById('btn-audio').innerText = AudioFX.muted ? 'Mute: ON' : 'Mute: OFF';
+    }
+
+    // 3. CANVAS SETUP & SHARP PIXEL RENDERING
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    // 4. GAME STATE
+    let stage = TARGET_STAGE;
+    let score = 0;
+    let secondsPlayed = 0;
+    let isGameOver = false;
+    let isVictory = false;
+    let isPaused = false;
+    let gameStarted = true;
+
+    // Timer Detik
+    setInterval(() => {
+      if (!isGameOver && !isVictory && !isPaused && gameStarted) {
+        secondsPlayed++;
+      }
+    }, 1000);
+
+    // Pemain: Agen Nexus
+    const player = {
+      x: 60,
+      y: 420,
+      w: 24,
+      h: 36,
+      vx: 0,
+      vy: 0,
+      hp: 100,
+      maxHp: 100,
+      lives: CONFIG.initialLives || 3,
+      heat: 0,
+      isOverheated: false,
+      isGrounded: false,
+      isSliding: false,
+      slideTimer: 0,
+      facing: 1, // 1 = kanan, -1 = kiri
+      shootCooldown: 0,
+      focusHoldTime: 0,
+      grapple: {
+        active: false,
+        anchorX: 0,
+        anchorY: 0,
+        length: 0
+      }
+    };
+
+    // Input Handling
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      keys[e.code] = true;
+      AudioFX.init();
+      if (e.code === 'KeyP') isPaused = !isPaused;
+      if (e.code === 'Space' && (isGameOver || isVictory)) resetGame();
+    });
+    window.addEventListener('keyup', e => {
+      keys[e.code] = false;
+      if (e.code === 'KeyX') {
+        if (player.focusHoldTime > 0.45 && !player.isOverheated) {
+          fireLaser(true); // Lepas tembakan fokus
+        }
+        player.focusHoldTime = 0;
+      }
+    });
+
+    function triggerKey(code, isDown) {
+      keys[code] = isDown;
+      AudioFX.init();
+      if (code === 'KeyX_Focus') {
+        if (isDown) {
+          player.focusHoldTime = 0.5;
+        } else {
+          fireLaser(true);
+          player.focusHoldTime = 0;
+        }
+      }
+    }
+    function triggerKeyOnce(code) {
+      AudioFX.init();
+      if (code === 'KeyB') doSlide();
+      if (code === 'KeyR') toggleGrapple();
+    }
+
+    // Platforms
+    let platforms = [];
+    let rails = [];
+    let enemies = [];
+    let bullets = [];
+    let particles = [];
+    let boss = null;
+
+    // Load Stage Data
+    function buildStage(stg) {
+      platforms = [];
+      rails = [];
+      enemies = [];
+      bullets = [];
+      particles = [];
+      boss = null;
+      player.x = 60;
+      player.y = 420;
+      player.vx = 0;
+      player.vy = 0;
+      player.grapple.active = false;
+
+      // Lantai Utama
+      platforms.push({ x: 0, y: 530, w: 800, h: 70, type: 'solid' });
+
+      // Grapple Rails di Langit-Langit Neon
+      rails.push({ x1: 80, y1: 120, x2: 720, y2: 120 });
+
+      if (stg === 1) {
+        // Stage 1: Pinggiran Kota & Menara Sinyal
+        platforms.push({ x: 120, y: 440, w: 120, h: 16, type: 'solid' });
+        platforms.push({ x: 280, y: 360, w: 160, h: 16, type: 'solid' });
+        platforms.push({ x: 480, y: 280, w: 140, h: 16, type: 'solid' });
+        platforms.push({ x: 650, y: 420, w: 130, h: 16, type: 'solid' });
+
+        // Musuh Robo-Trooper
+        enemies.push({ type: 'trooper', x: 320, y: 320, w: 24, h: 36, hp: 45, maxHp: 45, vx: 40, minX: 290, maxX: 420, shootTimer: 2.0 });
+        enemies.push({ type: 'trooper', x: 680, y: 380, w: 24, h: 36, hp: 45, maxHp: 45, vx: -40, minX: 660, maxX: 760, shootTimer: 1.5 });
+        // Drone Terbang
+        enemies.push({ type: 'drone', x: 220, y: 190, w: 26, h: 20, hp: 25, maxHp: 25, vx: 50, baseY: 190, timer: 0 });
+        enemies.push({ type: 'drone', x: 540, y: 170, w: 26, h: 20, hp: 25, maxHp: 25, vx: -60, baseY: 170, timer: 1 });
+        // Pemancar Sinyal (Signal Relay - Mini Boss akhir level)
+        enemies.push({ type: 'relay', x: 700, y: 470, w: 48, h: 60, hp: 280, maxHp: 280, shootTimer: 1.8 });
+      } else if (stg === 2) {
+        // Stage 2: Jalur Melayang & Rintangan
+        platforms.push({ x: 140, y: 420, w: 110, h: 16, type: 'moving', vx: 60, minX: 120, maxX: 260 });
+        platforms.push({ x: 300, y: 340, w: 100, h: 16, type: 'crumble', crumbleTime: 0, state: 'idle' });
+        platforms.push({ x: 440, y: 420, w: 120, h: 16, type: 'moving', vx: -70, minX: 380, maxX: 560 });
+        platforms.push({ x: 600, y: 300, w: 140, h: 16, type: 'solid' });
+
+        enemies.push({ type: 'drone', x: 180, y: 220, w: 26, h: 20, hp: 30, maxHp: 30, vx: 70, baseY: 220, timer: 0 });
+        enemies.push({ type: 'drone', x: 420, y: 160, w: 26, h: 20, hp: 30, maxHp: 30, vx: -80, baseY: 160, timer: 1 });
+        enemies.push({ type: 'trooper', x: 640, y: 260, w: 24, h: 36, hp: 60, maxHp: 60, vx: 35, minX: 610, maxX: 720, shootTimer: 1.2 });
+      } else if (stg === 3) {
+        // Stage 3: Inti Stasiun & Sentinel Vanguard Mech Boss!
+        platforms.push({ x: 90, y: 430, w: 130, h: 16, type: 'solid' });
+        platforms.push({ x: 260, y: 350, w: 140, h: 16, type: 'crumble', crumbleTime: 0, state: 'idle' });
+        platforms.push({ x: 440, y: 420, w: 120, h: 16, type: 'solid' });
+
+        // Sentinel Vanguard Mech
+        boss = {
+          x: 620,
+          y: 350,
+          w: 96,
+          h: 130,
+          hp: CONFIG.bossHp || 1200,
+          maxHp: CONFIG.bossHp || 1200,
+          coreExposed: false,
+          coreTimer: 0,
+          cannonTimer: 1.5,
+          missileTimer: 3.5,
+          aimAngle: Math.PI,
+          shieldBlink: 0
+        };
+
+        // Drone sniper bantuan
+        enemies.push({ type: 'drone', x: 500, y: 160, w: 26, h: 20, hp: 40, maxHp: 40, vx: 45, baseY: 160, timer: 0 });
+      }
+    }
+
+    buildStage(stage);
+
+    // Tembak Laser
+    function fireLaser(isFocused) {
+      if (player.isOverheated) return;
+
+      const damage = isFocused ? CONFIG.focusDamage : CONFIG.laserDamage;
+      const heatGain = isFocused ? 28 : 5;
+
+      player.heat += heatGain;
+      if (player.heat >= CONFIG.heatMax) {
+        player.heat = CONFIG.heatMax;
+        player.isOverheated = true;
+        AudioFX.overheat();
+      }
+
+      const bx = player.facing === 1 ? player.x + player.w + 4 : player.x - 4;
+      const by = player.y + player.h / 2 - 2;
+      const bvx = player.facing * (isFocused ? 750 : 600);
+
+      bullets.push({
+        x: bx,
+        y: by,
+        vx: bvx,
+        vy: 0,
+        damage: damage,
+        isFocused: isFocused,
+        color: isFocused ? '#facc15' : '#38bdf8',
+        fromPlayer: true,
+        w: isFocused ? 24 : 14,
+        h: isFocused ? 8 : 4
+      });
+
+      if (isFocused) AudioFX.focusBeam(); else AudioFX.laser();
+
+      // Recoil & Partikel Moncong Senjata
+      for (let i = 0; i < 4; i++) {
+        particles.push({
+          x: bx, y: by,
+          vx: (Math.random() - 0.5) * 80 + player.facing * 50,
+          vy: (Math.random() - 0.5) * 60,
+          life: 0.15, maxLife: 0.15,
+          color: isFocused ? '#fde047' : '#67e8f9',
+          size: Math.random() * 3 + 2
+        });
+      }
+    }
+
+    // Slide Dash
+    function doSlide() {
+      if (!player.isGrounded || player.isSliding) return;
+      player.isSliding = true;
+      player.slideTimer = 0.32;
+      player.vx = player.facing * CONFIG.dashPower;
+      AudioFX.slide();
+
+      for (let i = 0; i < 6; i++) {
+        particles.push({
+          x: player.x + (player.facing === 1 ? 0 : player.w),
+          y: player.y + player.h - 4,
+          vx: -player.facing * (Math.random() * 120 + 40),
+          vy: -Math.random() * 40,
+          life: 0.25, maxLife: 0.25,
+          color: '#f97316',
+          size: Math.random() * 4 + 2
+        });
+      }
+    }
+
+    // Grapple Hook Toggle
+    function toggleGrapple() {
+      if (player.grapple.active) {
+        player.grapple.active = false;
+        return;
+      }
+
+      // Cari titik terdekat pada rail langit-langit
+      let bestX = player.x + player.w / 2;
+      let railY = 120;
+      let dist = Math.hypot(bestX - (player.x + player.w/2), railY - player.y);
+
+      if (dist <= CONFIG.grappleReach && player.y > railY) {
+        player.grapple.active = true;
+        player.grapple.anchorX = bestX;
+        player.grapple.anchorY = railY;
+        player.grapple.length = dist;
+        AudioFX.grapple();
+      }
+    }
+
+    function resetGame() {
+      score = 0;
+      secondsPlayed = 0;
+      isGameOver = false;
+      isVictory = false;
+      player.hp = 100;
+      player.lives = CONFIG.initialLives || 3;
+      player.heat = 0;
+      player.isOverheated = false;
+      buildStage(stage);
+    }
+
+    // 5. GAME UPDATE LOOP (Delta Time Clamped 60 FPS)
+    let lastTime = performance.now();
+
+    function gameLoop(now) {
+      requestAnimationFrame(gameLoop);
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+
+      if (!isPaused && !isGameOver && !isVictory) {
+        update(dt);
+      }
+      render();
+    }
+
+    function update(dt) {
+      // Pendinginan Heat Gauge Senjata
+      if (player.heat > 0) {
+        player.heat = Math.max(0, player.heat - CONFIG.heatCoolRate * dt);
+        if (player.isOverheated && player.heat <= CONFIG.heatMax * 0.3) {
+          player.isOverheated = false;
+        }
+      }
+
+      // Input Gerak Horizontal
+      let moveDir = 0;
+      if (keys['KeyA'] || keys['ArrowLeft']) moveDir -= 1;
+      if (keys['KeyD'] || keys['ArrowRight']) moveDir += 1;
+
+      if (moveDir !== 0) {
+        player.facing = moveDir;
+        if (!player.isSliding) player.vx = moveDir * CONFIG.speed;
+      } else if (!player.isSliding) {
+        player.vx *= 0.8;
+      }
+
+      // Lompat
+      if ((keys['KeyW'] || keys['Space'] || keys['ArrowUp']) && player.isGrounded && !player.isSliding) {
+        player.vy = -CONFIG.jumpForce;
+        player.isGrounded = false;
+        AudioFX.jump();
+      }
+
+      // Slide Dash
+      if ((keys['KeyB'] || keys['ShiftLeft'] || keys['ShiftRight']) && player.isGrounded && !player.isSliding) {
+        doSlide();
+      }
+
+      if (player.isSliding) {
+        player.slideTimer -= dt;
+        if (player.slideTimer <= 0) player.isSliding = false;
+      }
+
+      // Tembakan Multi-Arah
+      if (keys['KeyX']) {
+        player.focusHoldTime += dt;
+        player.shootCooldown -= dt;
+        if (player.shootCooldown <= 0 && player.focusHoldTime < 0.35) {
+          fireLaser(false);
+          player.shootCooldown = 0.16;
+        }
+      }
+
+      // Grapple Hook Physics
+      if (player.grapple.active) {
+        const dx = (player.x + player.w / 2) - player.grapple.anchorX;
+        const dy = player.y - player.grapple.anchorY;
+        const curDist = Math.hypot(dx, dy);
+
+        if (curDist > player.grapple.length) {
+          const nx = dx / curDist;
+          const ny = dy / curDist;
+          const dot = player.vx * nx + player.vy * ny;
+          if (dot > 0) {
+            player.vx -= dot * nx * 1.1;
+            player.vy -= dot * ny * 1.1;
+          }
+          player.x = player.grapple.anchorX + nx * player.grapple.length - player.w / 2;
+          player.y = player.grapple.anchorY + ny * player.grapple.length;
+        }
+      }
+
+      // Gravitasi
+      player.vy += 980 * dt;
+
+      // Update Posisi Pemain
+      player.x += player.vx * dt;
+      player.y += player.vy * dt;
+
+      // Batas Layar
+      if (player.x < 10) player.x = 10;
+      if (player.x > 770) player.x = 770;
+
+      // Deteksi Tabrakan Platform AABB
+      player.isGrounded = false;
+      platforms.forEach(plat => {
+        if (plat.type === 'moving') {
+          plat.x += plat.vx * dt;
+          if (plat.x < plat.minX || plat.x > plat.maxX) plat.vx *= -1;
+        }
+
+        // Pijakan Atas Platform
+        if (
+          player.x + player.w > plat.x &&
+          player.x < plat.x + plat.w &&
+          player.y + player.h >= plat.y &&
+          player.y + player.h <= plat.y + 18 &&
+          player.vy >= 0
+        ) {
+          player.y = plat.y - player.h;
+          player.vy = 0;
+          player.isGrounded = true;
+
+          if (plat.type === 'moving') player.x += plat.vx * dt;
+
+          if (plat.type === 'crumble' && plat.state === 'idle') {
+            plat.state = 'shaking';
+            plat.crumbleTime = 1.0;
+          }
+        }
+
+        if (plat.type === 'crumble' && plat.state === 'shaking') {
+          plat.crumbleTime -= dt;
+          if (plat.crumbleTime <= 0) {
+            plat.state = 'fallen';
+            AudioFX.explode();
+          }
+        }
+      });
+
+      // Update Peluru
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+
+        if (b.x < -20 || b.x > 820 || b.y < -20 || b.y > 620) {
+          bullets.splice(i, 1);
+          continue;
+        }
+
+        // Peluru Pemain Menghantam Musuh
+        if (b.fromPlayer) {
+          // Check Boss
+          if (boss && b.x > boss.x && b.x < boss.x + boss.w && b.y > boss.y && b.y < boss.y + boss.h) {
+            let dmg = b.damage;
+            // Cek Hit Titik Lemah Dada
+            const coreY = boss.y + 40;
+            if (boss.coreExposed && b.y >= coreY - 15 && b.y <= coreY + 15) {
+              dmg *= 3; // 3x Critical Damage!
+              score += 250;
+              // Efek Ledakan Emas di Inti
+              for (let p = 0; p < 8; p++) {
+                particles.push({
+                  x: b.x, y: b.y,
+                  vx: (Math.random() - 0.5) * 150,
+                  vy: (Math.random() - 0.5) * 150,
+                  life: 0.3, maxLife: 0.3,
+                  color: '#fbbf24', size: 4
+                });
+              }
+            } else {
+              boss.shieldBlink = 0.15;
+            }
+
+            boss.hp -= dmg;
+            bullets.splice(i, 1);
+            AudioFX.explode();
+
+            if (boss.hp <= 0) {
+              boss.hp = 0;
+              isVictory = true;
+              score += 5000;
+            }
+            continue;
+          }
+
+          // Check Regular Enemies
+          for (let e = enemies.length - 1; e >= 0; e--) {
+            const en = enemies[e];
+            if (b.x > en.x && b.x < en.x + en.w && b.y > en.y && b.y < en.y + en.h) {
+              en.hp -= b.damage;
+              bullets.splice(i, 1);
+              AudioFX.explode();
+
+              // Partikel Hit
+              for (let p = 0; p < 4; p++) {
+                particles.push({
+                  x: b.x, y: b.y,
+                  vx: (Math.random() - 0.5) * 120,
+                  vy: (Math.random() - 0.5) * 120,
+                  life: 0.2, maxLife: 0.2,
+                  color: '#38bdf8', size: 3
+                });
+              }
+
+              if (en.hp <= 0) {
+                score += en.type === 'relay' ? 1000 : (en.type === 'trooper' ? 150 : 100);
+                enemies.splice(e, 1);
+
+                // Cek Kemenangan Stage 1 & 2
+                if (stage === 1 && en.type === 'relay') {
+                  setTimeout(() => { selectStageInGame(2); }, 1200);
+                } else if (stage === 2 && enemies.length === 0) {
+                  setTimeout(() => { selectStageInGame(3); }, 1500);
+                }
+              }
+              break;
+            }
+          }
+        } else {
+          // Peluru Musuh Menghantam Pemain
+          if (
+            b.x > player.x && b.x < player.x + player.w &&
+            b.y > player.y && b.y < player.y + player.h
+          ) {
+            if (!player.isSliding) { // Invulnerability during slide dash!
+              player.hp -= b.damage;
+              AudioFX.explode();
+              if (player.hp <= 0) {
+                player.lives--;
+                if (player.lives <= 0) {
+                  isGameOver = true;
+                } else {
+                  player.hp = 100;
+                  player.x = 60;
+                  player.y = 420;
+                }
+              }
+            }
+            bullets.splice(i, 1);
+          }
+        }
+      }
+
+      // Update AI Musuh
+      enemies.forEach(en => {
+        if (en.type === 'trooper') {
+          en.x += en.vx * dt;
+          if (en.x < en.minX || en.x > en.maxX) en.vx *= -1;
+
+          en.shootTimer -= dt;
+          if (en.shootTimer <= 0) {
+            en.shootTimer = 1.8;
+            const shootDir = (player.x > en.x) ? 1 : -1;
+            bullets.push({
+              x: en.x + en.w / 2, y: en.y + 12,
+              vx: shootDir * 320, vy: 0,
+              damage: 15, isFocused: false,
+              color: '#f43f5e', fromPlayer: false, w: 10, h: 4
+            });
+            AudioFX.laser();
+          }
+        } else if (en.type === 'drone') {
+          en.timer += dt;
+          en.x += en.vx * dt;
+          en.y = en.baseY + Math.sin(en.timer * 3) * 25;
+          if (en.x < 100 || en.x > 700) en.vx *= -1;
+
+          // Drone Ram Attack
+          if (Math.hypot(en.x - player.x, en.y - player.y) < 32 && !player.isSliding) {
+            player.hp -= 20;
+            en.hp = 0;
+            AudioFX.explode();
+          }
+        } else if (en.type === 'relay') {
+          en.shootTimer -= dt;
+          if (en.shootTimer <= 0) {
+            en.shootTimer = 2.0;
+            bullets.push({
+              x: en.x, y: en.y + 20,
+              vx: -280, vy: 0,
+              damage: 20, isFocused: false,
+              color: '#e11d48', fromPlayer: false, w: 12, h: 5
+            });
+            AudioFX.laser();
+          }
+        }
+      });
+
+      // Update Boss Sentinel Vanguard Mech
+      if (boss && boss.hp > 0) {
+        boss.coreTimer += dt;
+        // Panel dada terbuka setiap 4 detik selama 2 detik
+        boss.coreExposed = Math.floor(boss.coreTimer) % 6 >= 3;
+
+        // Meriam Ganda
+        boss.cannonTimer -= dt;
+        if (boss.cannonTimer <= 0) {
+          boss.cannonTimer = 1.6;
+          bullets.push({
+            x: boss.x - 10, y: boss.y + 65,
+            vx: -360, vy: 0,
+            damage: 22, isFocused: false,
+            color: '#ef4444', fromPlayer: false, w: 14, h: 6
+          });
+          AudioFX.laser();
+        }
+
+        // Salvo Rudal Bahu
+        boss.missileTimer -= dt;
+        if (boss.missileTimer <= 0) {
+          boss.missileTimer = 3.8;
+          bullets.push({
+            x: boss.x + 20, y: boss.y - 10,
+            vx: -240, vy: -120,
+            damage: 28, isFocused: true,
+            color: '#f97316', fromPlayer: false, w: 12, h: 8
+          });
+          AudioFX.explode();
+        }
+      }
+
+      // Update Partikel
+      for (let p = particles.length - 1; p >= 0; p--) {
+        const pt = particles[p];
+        pt.life -= dt;
+        pt.x += pt.vx * dt;
+        pt.y += pt.vy * dt;
+        if (pt.life <= 0) particles.splice(p, 1);
+      }
+    }
+
+    function selectStageInGame(stg) {
+      stage = stg;
+      buildStage(stage);
+    }
+
+    // 6. RENDER LOOP (16-BIT RETRO PIXEL ART & NEON GLOW)
+    function render() {
+      ctx.clearRect(0, 0, 800, 600);
+
+      // A. Parallax Background: Cyber City Night Sky & Skyscrapers
+      ctx.fillStyle = '#060a17';
+      ctx.fillRect(0, 0, 800, 600);
+
+      // Layer 1: Gedung Jauh (Silhouette)
+      ctx.fillStyle = '#0b1124';
+      ctx.fillRect(30, 180, 70, 360);
+      ctx.fillRect(130, 220, 90, 320);
+      ctx.fillRect(260, 140, 110, 400);
+      ctx.fillRect(410, 200, 80, 340);
+      ctx.fillRect(540, 160, 90, 380);
+      ctx.fillRect(660, 210, 100, 330);
+
+      // Layer 2: Jendela Gedung Berpendar Kuning/Cyan
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.2)';
+      for (let y = 200; y < 500; y += 22) {
+        ctx.fillRect(45, y, 12, 8);
+        ctx.fillRect(145, y + 6, 14, 8);
+        ctx.fillRect(285, y, 16, 10);
+        ctx.fillRect(435, y + 4, 12, 8);
+        ctx.fillRect(565, y, 14, 8);
+      }
+
+      // B. Reklame Neon Kota (Neon Billboard Signs)
+      ctx.save();
+      ctx.shadowBlur = 12;
+      
+      // Sign: CYBERCITY 2142
+      ctx.shadowColor = '#06b6d4';
+      ctx.fillStyle = '#082f49';
+      ctx.fillRect(60, 260, 90, 24);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.strokeRect(60, 260, 90, 24);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '7px monospace';
+      ctx.fillText('CYBERCITY 2142', 65, 275);
+
+      // Sign: KEON 2142
+      ctx.shadowColor = '#c084fc';
+      ctx.fillStyle = '#3b0764';
+      ctx.fillRect(320, 240, 80, 22);
+      ctx.strokeStyle = '#c084fc';
+      ctx.strokeRect(320, 240, 80, 22);
+      ctx.fillStyle = '#f3e8ff';
+      ctx.fillText('KEON 2142', 334, 254);
+
+      // Sign: NEON ARCADE
+      ctx.shadowColor = '#facc15';
+      ctx.fillStyle = '#422006';
+      ctx.fillRect(640, 250, 85, 22);
+      ctx.strokeStyle = '#facc15';
+      ctx.strokeRect(640, 250, 85, 22);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillText('NEON ARCADE', 648, 264);
+
+      ctx.restore();
+
+      // C. Rintik Hujan Cyberpunk Neon
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.lineWidth = 1;
+      const t = performance.now() * 0.4;
+      ctx.beginPath();
+      for (let i = 0; i < 40; i++) {
+        let rx = (i * 37 + t * 0.3) % 800;
+        let ry = (i * 29 + t) % 550;
+        ctx.moveTo(rx, ry);
+        ctx.lineTo(rx - 2, ry + 12);
+      }
+      ctx.stroke();
+
+      // D. Rel Langit-Langit Grapple Hook
+      rails.forEach(r => {
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(r.x1, r.y1);
+        ctx.lineTo(r.x2, r.y2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#38bdf8';
+        for (let x = r.x1; x <= r.x2; x += 32) {
+          ctx.fillRect(x - 2, r.y1 - 4, 4, 8);
+        }
+      });
+
+      // E. Platform Balok Baja & Platform Bergerak
+      platforms.forEach(plat => {
+        if (plat.type === 'fallen') return;
+
+        ctx.save();
+        if (plat.type === 'crumble' && plat.state === 'shaking') {
+          ctx.translate((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
+        }
+
+        // Badan Balok
+        ctx.fillStyle = plat.type === 'moving' ? '#0f2942' : '#141d30';
+        ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+
+        // Pinggiran Atas Neon
+        ctx.fillStyle = plat.type === 'moving' ? '#38bdf8' : (plat.type === 'crumble' ? '#f59e0b' : '#0284c7');
+        ctx.fillRect(plat.x, plat.y, plat.w, 3);
+
+        // Pola Kisi Girder Diagonal
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1;
+        for (let gx = plat.x; gx < plat.x + plat.w; gx += 16) {
+          ctx.beginPath();
+          ctx.moveTo(gx, plat.y + 3);
+          ctx.lineTo(gx + 12, plat.y + plat.h);
+          ctx.stroke();
+        }
+        ctx.restore();
+      });
+
+      // F. Tali Grapple Hook (Jika Aktif)
+      if (player.grapple.active) {
+        ctx.save();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = '#38bdf8';
+        ctx.beginPath();
+        ctx.moveTo(player.x + player.w / 2, player.y);
+        ctx.lineTo(player.grapple.anchorX, player.grapple.anchorY);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // G. Render Pemain: Agen Nexus
+      drawNexus(ctx, player);
+
+      // H. Render Musuh
+      enemies.forEach(en => {
+        if (en.type === 'trooper') drawRoboTrooper(ctx, en);
+        if (en.type === 'drone') drawDrone(ctx, en);
+        if (en.type === 'relay') drawRelay(ctx, en);
+      });
+
+      // I. Render Boss: Sentinel Vanguard Mech
+      if (boss && boss.hp > 0) {
+        drawVanguardMech(ctx, boss);
+      }
+
+      // J. Render Peluru (Laser Glow)
+      bullets.forEach(b => {
+        ctx.save();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = b.color;
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h);
+        ctx.restore();
+      });
+
+      // K. Partikel
+      particles.forEach(pt => {
+        ctx.fillStyle = pt.color;
+        ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+      });
+
+      // L. RETRO ARCADE HUD OVERLAY
+      drawHUD(ctx);
+
+      // M. Game Over / Victory Screen
+      if (isGameOver) {
+        drawCenterBanner(ctx, 'MISI GAGAL: NEXUS TERELIMINASI', 'TEKAN [SPASI] UNTUK MENCOBA LAGI', '#ef4444');
+      } else if (isVictory) {
+        drawCenterBanner(ctx, 'INTI AI HANCUR! CYBER CITY AMAN!', 'SKENARIO SELESAI · SKOR: ' + score, '#10b981');
+      } else if (isPaused) {
+        drawCenterBanner(ctx, 'GAME DIPAUSETKAN', 'TEKAN [P] UNTUK MELANJUTKAN', '#38bdf8');
+      }
+    }
+
+    // 7. SPRITE DRAWING PROCEDURAL
+    function drawNexus(c, p) {
+      c.save();
+      c.translate(p.x, p.y);
+      if (p.facing === -1) {
+        c.scale(-1, 1);
+        c.translate(-p.w, 0);
+      }
+
+      // Helm & Rambut Biru Neon
+      c.fillStyle = '#06b6d4';
+      c.fillRect(4, 2, 16, 10);
+      // Rambut berkibar
+      c.fillRect(0, 5, 5, 8);
+
+      // Kacamata HUD Visor Cyan Glow
+      c.fillStyle = '#a5f3fc';
+      c.fillRect(13, 5, 7, 3);
+
+      // Armor Oranye & Hitam
+      c.fillStyle = '#ea580c'; // Armor oranye
+      c.fillRect(5, 12, 14, 14);
+      c.fillStyle = '#1e293b'; // Bagian hitam
+      c.fillRect(7, 14, 10, 10);
+
+      // Senapan Laser Multi-Arah
+      c.fillStyle = '#64748b';
+      c.fillRect(15, 17, 13, 5);
+      c.fillStyle = '#38bdf8';
+      c.fillRect(26, 18, 3, 3);
+
+      // Kaki & Pendorong Jet Bot
+      if (p.isSliding) {
+        c.fillStyle = '#f97316';
+        c.fillRect(0, 26, 24, 8);
+      } else {
+        c.fillStyle = '#334155';
+        c.fillRect(5, 26, 5, 10);
+        c.fillRect(14, 26, 5, 10);
+      }
+      c.restore();
+    }
+
+    function drawRoboTrooper(c, en) {
+      c.save();
+      c.translate(en.x, en.y);
+      // Sasis Robotik Baja
+      c.fillStyle = '#475569';
+      c.fillRect(4, 2, 16, 10);
+      // Mata Sensor Merah
+      c.fillStyle = '#ef4444';
+      c.fillRect(13, 5, 6, 3);
+      // Armor Dada
+      c.fillStyle = '#334155';
+      c.fillRect(4, 12, 16, 14);
+      // Senapan
+      c.fillStyle = '#1e293b';
+      c.fillRect(en.vx > 0 ? 15 : -5, 17, 12, 4);
+      // Kaki
+      c.fillStyle = '#1e293b';
+      c.fillRect(5, 26, 5, 10);
+      c.fillRect(14, 26, 5, 10);
+
+      // Health bar kecil musuh
+      c.fillStyle = '#000';
+      c.fillRect(0, -8, 24, 3);
+      c.fillStyle = '#ef4444';
+      c.fillRect(0, -8, (en.hp / en.maxHp) * 24, 3);
+      c.restore();
+    }
+
+    function drawDrone(c, en) {
+      c.save();
+      c.translate(en.x, en.y);
+      // Rotor Baling-baling
+      c.fillStyle = '#64748b';
+      c.fillRect(0, 2, 26, 2);
+      // Bodi Drone
+      c.fillStyle = '#0f172a';
+      c.fillRect(5, 5, 16, 12);
+      // Sensor Inti Berkedip
+      c.fillStyle = '#f59e0b';
+      c.fillRect(10, 8, 6, 6);
+      c.restore();
+    }
+
+    function drawRelay(c, en) {
+      c.save();
+      c.translate(en.x, en.y);
+      // Menara Sinyal Generator
+      c.fillStyle = '#1e293b';
+      c.fillRect(8, 20, 32, 40);
+      // Kubah Listrik
+      c.fillStyle = '#0284c7';
+      c.beginPath();
+      c.arc(24, 20, 16, Math.PI, 0);
+      c.fill();
+      // Antena
+      c.strokeStyle = '#38bdf8';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(24, 4);
+      c.lineTo(24, 0);
+      c.stroke();
+      // Health Bar Menara
+      c.fillStyle = '#000';
+      c.fillRect(4, -10, 40, 5);
+      c.fillStyle = '#38bdf8';
+      c.fillRect(4, -10, (en.hp / en.maxHp) * 40, 5);
+      c.restore();
+    }
+
+    function drawVanguardMech(c, b) {
+      c.save();
+      c.translate(b.x, b.y);
+
+      // Bodi Baja Berat
+      c.fillStyle = b.shieldBlink > 0 ? '#94a3b8' : '#1e1b4b';
+      c.fillRect(12, 20, 72, 70);
+
+      // Meriam Ganda Kiri
+      c.fillStyle = '#0f172a';
+      c.fillRect(-12, 50, 26, 14);
+      c.fillRect(-16, 54, 8, 6);
+
+      // Peluncur Rudal Bahu
+      c.fillStyle = '#312e81';
+      c.fillRect(68, 6, 26, 22);
+      c.fillStyle = '#ef4444';
+      c.fillRect(72, 10, 5, 5);
+      c.fillRect(82, 10, 5, 5);
+
+      // Kaki Hidrolik
+      c.fillStyle = '#0f172a';
+      c.fillRect(20, 90, 16, 40);
+      c.fillRect(60, 90, 16, 40);
+
+      // TITIK LEMAH: INTI DADA TERBUKA
+      if (b.coreExposed) {
+        c.save();
+        c.shadowBlur = 18;
+        c.shadowColor = '#f59e0b';
+        c.fillStyle = '#fbbf24';
+        c.beginPath();
+        c.arc(48, 55, 14, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = '#fff';
+        c.font = '7px monospace';
+        c.fillText('! WEAK POINT !', 10, 28);
+        c.restore();
+      } else {
+        // Plat Pelindung Tertutup
+        c.fillStyle = '#3730a3';
+        c.fillRect(36, 43, 24, 24);
+      }
+
+      // Bar HP Bos di Atas Kepala
+      c.fillStyle = '#000';
+      c.fillRect(8, -16, 80, 8);
+      c.fillStyle = '#ef4444';
+      c.fillRect(8, -16, (b.hp / b.maxHp) * 80, 8);
+      c.strokeStyle = '#fff';
+      c.lineWidth = 1;
+      c.strokeRect(8, -16, 80, 8);
+      c.fillStyle = '#fff';
+      c.font = '6px monospace';
+      c.fillText('VANGUARD MECH: ' + b.hp + ' HP', 10, -20);
+
+      c.restore();
+    }
+
+    // 8. RETRO ARCADE HUD
+    function drawHUD(c) {
+      c.save();
+      c.font = '9px "Press Start 2P", monospace';
+
+      // Bar Health Nexus
+      c.fillStyle = '#38bdf8';
+      c.fillText('HEALTH [III]', 20, 24);
+      c.fillStyle = '#0f172a';
+      c.fillRect(20, 30, 120, 10);
+      c.fillStyle = player.hp > 30 ? '#06b6d4' : '#ef4444';
+      c.fillRect(20, 30, (player.hp / player.maxHp) * 120, 10);
+      c.strokeStyle = '#082f49';
+      c.strokeRect(20, 30, 120, 10);
+
+      // Nyawa (Lives)
+      c.fillStyle = '#f43f5e';
+      c.fillText('LIVES: ' + '♥'.repeat(player.lives), 150, 38);
+
+      // Score
+      c.fillStyle = '#38bdf8';
+      c.fillText('SCORE', 340, 24);
+      c.fillStyle = '#fff';
+      const scoreStr = String(score).padStart(7, '0');
+      c.fillText(scoreStr, 330, 38);
+
+      // Time
+      c.fillStyle = '#facc15';
+      c.fillText('TIME', 490, 24);
+      c.fillStyle = '#fff';
+      const m = String(Math.floor(secondsPlayed / 60)).padStart(2, '0');
+      const s = String(secondsPlayed % 60).padStart(2, '0');
+      c.fillText(m + ':' + s, 480, 38);
+
+      // Stage
+      c.fillStyle = '#38bdf8';
+      c.fillText('STAGE ' + stage + '-3', 680, 24);
+
+      // Heat Gauge Senjata
+      c.fillStyle = player.isOverheated ? '#ef4444' : '#f59e0b';
+      const heatLabel = player.isOverheated ? 'OVERHEAT!' : 'HEAT GAUGE';
+      c.fillText(heatLabel, 670, 38);
+      c.fillStyle = '#0f172a';
+      c.fillRect(660, 44, 110, 6);
+      c.fillStyle = player.isOverheated ? '#ef4444' : (player.heat > 60 ? '#f59e0b' : '#38bdf8');
+      c.fillRect(660, 44, (player.heat / CONFIG.heatMax) * 110, 6);
+
+      // Credit Counter
+      c.fillStyle = '#64748b';
+      c.fillText('CREDITS: 4', 20, 580);
+      c.fillText('NEXUS 2142', 670, 580);
+
+      c.restore();
+    }
+
+    function drawCenterBanner(c, title, subtitle, color) {
+      c.save();
+      c.fillStyle = 'rgba(2, 6, 23, 0.85)';
+      c.fillRect(100, 220, 600, 140);
+      c.strokeStyle = color;
+      c.lineWidth = 2;
+      c.strokeRect(100, 220, 600, 140);
+
+      c.font = '14px "Press Start 2P", monospace';
+      c.fillStyle = color;
+      c.textAlign = 'center';
+      c.fillText(title, 400, 275);
+
+      c.font = '9px "Press Start 2P", monospace';
+      c.fillStyle = '#cbd5e1';
+      c.fillText(subtitle, 400, 315);
+      c.restore();
+    }
+
+    // Start Engine
+    requestAnimationFrame(gameLoop);
+  <\/script>
+</body>
+</html>
+      `;
+
+      iframe.srcdoc = iframeContent;
+    }
+
+    document.getElementById('run-btn').addEventListener('click', runCode);
+
+    // Fungsi Unduh Berkas HTML Ini Secara Mandiri
+    function downloadSelfHtml() {
+      const htmlContent = document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cyber-assault-2142-studio.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
